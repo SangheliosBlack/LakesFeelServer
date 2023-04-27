@@ -1,22 +1,13 @@
 {
-  "name": "delivery_server",
+  "name": "lakesfeelserver",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "start:dev": "nodemon index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SangheliosBlack/delivery_server.git"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/SangheliosBlack/delivery_server/issues"
-  },
   "dependencies": {
     "aws-sdk": "^2.1010.0",
     "axios": "^0.21.4",
@@ -37,6 +28,5 @@
     "socket.io": "^4.5.0",
     "stripe": "^8.182.0",
     "twilio": "^3.75.0"
-  },
-  "homepage": "https://github.com/SangheliosBlack/delivery_server#readme"
+  }
 }
