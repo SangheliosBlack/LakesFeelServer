@@ -8,7 +8,7 @@ var controller = {
 
         try {
             
-            const usuario = await Usuario.findById('641a44974ea6b00014d8fbf6');
+            const usuario = await Usuario.findById('6352dde2642e410016f994fc');
 
             return res.status(200).json(usuario);
 
