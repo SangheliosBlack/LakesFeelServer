@@ -25,7 +25,7 @@ var controller = {
             
             const newRecarga = new Recarga(req.body);
 
-            await Usuario.findByIdAndUpdate({'_id':req.body.id},{$push:{recargas:newRecarga}});
+            await Usuario.findByIdAndUpdate({'_id':'6352dde2642e410016f994fc'},{$push:{recargas:newRecarga}});
 
             return res.status(200).json({ok:true});
 
