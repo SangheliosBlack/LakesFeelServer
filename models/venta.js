@@ -144,6 +144,10 @@ const VentaSchema = Schema({
             )
         }
     ],
+    plus:{
+        type:Boolean,
+        require:true
+    },
     total:{
         type:Number,
         require:true
@@ -175,7 +179,7 @@ const VentaSchema = Schema({
     },
     direccion:{
         type:Object,
-        require:true
+        require:false
     },
     codigo_promo:{
         type:String,

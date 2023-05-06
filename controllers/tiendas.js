@@ -45,7 +45,7 @@ var controller = {
     
         var venta = new Venta();
     
-        venta.total = tienda_ropa ? total-10.2 : total;
+        venta.total = total;
         venta.envioPromo = codigo ? envio.toFixed(2) :0;
         venta.codigo_promo = codigo ? codigo : '';
         venta.envio = envio.toFixed(2);
@@ -57,6 +57,7 @@ var controller = {
         if(tienda_ropa){
 
             venta.apartado = apartado;
+            venta.plus = true;
             venta.liquidado = liquidado;
 
             if(venta.apartado){
@@ -122,8 +123,11 @@ var controller = {
                     var usuarioVenta = new UsuarioVenta();
                     var direccion_negocio = new Direccion();
     
-                    direccion_negocio.coordenadas = datos_tienda.coordenadas;
-                    direccion_negocio.titulo = datos_tienda.direccion;
+                    direccion_negocio.coordenadas={};
+                    direccion_negocio.coordenadas.lat = 0.0;
+                    direccion_negocio.coordenadas.lng = 0.0;
+
+                    direccion_negocio.titulo = '';
                     direccion_negocio.predeterminado = false;
                     
     
@@ -134,11 +138,11 @@ var controller = {
                     subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
                     subElement.tienda = productos[element].tienda;
                     subElement.productos = [productos[element]];
-                    subElement.imagen = datos_tienda.imagen_perfil;
-                    subElement.punto_venta = datos_tienda.punto_venta;
+                    subElement.imagen = '';
+                    subElement.punto_venta = '';
                     subElement.efectivo = efectivo;
                     subElement.usuario = usuarioVenta;
-                    subElement.tiempo_espera = datos_tienda.tiempo_espera;
+                    subElement.tiempo_espera = 0;
                     subElement.envio = 0;
                     subElement.direccion_negocio = direccion_negocio;
                     subElement.direccion_cliente = direccion;

@@ -263,6 +263,68 @@ const fs = require("fs");
         });
         
     },
+
+    calcularTotalAcumulado: async(req,res)=>{        
+
+        Venta.
+        find({usuario:mongoose.Types.ObjectId('6352dde2642e410016f994fc')}).
+        sort({'updatedAt':-1}).
+        populate('pedidos.repartidor').
+        populate({
+            path:'pedidos.repartidor',
+            populate:{path:'negocios'},
+        }).
+        exec( async function(err,data){
+
+            if(err) {
+
+                return res.json({ok:false});
+
+            }
+            const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
+            
+            var recargas = await Usuario.findById('6352dde2642e410016f994fc');
+            
+            
+
+            const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
+
+            var listado = [];
+
+
+            for (let i = 0; i < Object.keys(recargas.recargas).length; i++) {
+
+                var nuevaVentaPlantilla = new Venta();
+
+                nuevaVentaPlantilla.pedidos = [];
+                nuevaVentaPlantilla.total = recargas.recargas[i].cantidad;
+                nuevaVentaPlantilla.efectivo = false;
+                nuevaVentaPlantilla.envio = 0;
+                nuevaVentaPlantilla.envioPromo = 0;
+                nuevaVentaPlantilla.usuario = '6352dde2642e410016f994fc',
+                nuevaVentaPlantilla.codigo_promo = '6352dde2642e410016f994fc',
+                nuevaVentaPlantilla.apartado = false,
+                nuevaVentaPlantilla.liquidado = true,
+                nuevaVentaPlantilla.plus = false;
+                nuevaVentaPlantilla.servicio = 0;
+                nuevaVentaPlantilla.negocio = '';
+                nuevaVentaPlantilla.__v = 0;
+                nuevaVentaPlantilla.createdAt = new Date();
+                nuevaVentaPlantilla.updatedAt = new Date();
+                data.push(nuevaVentaPlantilla);
+
+            }
+
+            return res.json({
+                acumulado:sumaRecargas-sumGastos,
+                ventas:data,
+                last:new Date()
+            });
+
+        });
+
+    },
+    
     buscarCodigo:async(req,res)=>{
 
         try {

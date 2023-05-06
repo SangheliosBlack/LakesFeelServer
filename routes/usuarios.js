@@ -21,4 +21,6 @@ router.post('/modificarNombre',               validarJWT,controller.modificarNom
 router.post('cambiarAvatar',                  validarJWT,validarJWT,controller.modificarAvatar);
 router.post('/buscarCodigo',                  validarJWT,controller.buscarCodigo);
 
+router.post('/calcularAcumulado',                  controller.calcularTotalAcumulado);
+
 module.exports = router;

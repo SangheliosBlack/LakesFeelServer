@@ -21,15 +21,19 @@ var controller = {
     },
     agregarAbonoCliente:async(req,res)=>{
 
+        console.log(req.body);
+
         try {
             
             const newRecarga = new Recarga(req.body);
+
 
             await Usuario.findByIdAndUpdate({'_id':'6352dde2642e410016f994fc'},{$push:{recargas:newRecarga}});
 
             return res.status(200).json({ok:true});
 
         } catch (error) {
+
             
             return res.status(400).json({ok:false});
 
