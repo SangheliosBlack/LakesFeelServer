@@ -267,7 +267,7 @@ const fs = require("fs");
     calcularTotalAcumulado: async(req,res)=>{        
 
         Venta.
-        find({usuario:mongoose.Types.ObjectId('6352dde2642e410016f994fc')}).
+        find({usuario:mongoose.Types.ObjectId(req.body.usuario)}).
         sort({'updatedAt':-1}).
         populate('pedidos.repartidor').
         populate({
@@ -283,14 +283,9 @@ const fs = require("fs");
             }
             const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
             
-            var recargas = await Usuario.findById('6352dde2642e410016f994fc');
+            var recargas = await Usuario.findById(req.body.usuario);
             
-            
-
             const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
-
-            var listado = [];
-
 
             for (let i = 0; i < Object.keys(recargas.recargas).length; i++) {
 
@@ -301,8 +296,8 @@ const fs = require("fs");
                 nuevaVentaPlantilla.efectivo = false;
                 nuevaVentaPlantilla.envio = 0;
                 nuevaVentaPlantilla.envioPromo = 0;
-                nuevaVentaPlantilla.usuario = '6352dde2642e410016f994fc',
-                nuevaVentaPlantilla.codigo_promo = '6352dde2642e410016f994fc',
+                nuevaVentaPlantilla.usuario = req.body.usuario,
+                nuevaVentaPlantilla.codigo_promo = '',
                 nuevaVentaPlantilla.apartado = false,
                 nuevaVentaPlantilla.liquidado = true,
                 nuevaVentaPlantilla.plus = false;
@@ -312,15 +307,29 @@ const fs = require("fs");
                 nuevaVentaPlantilla.createdAt = recargas.recargas[i].createdAt;
                 nuevaVentaPlantilla.updatedAt = recargas.recargas[i].updatedAt;
 
-                console.log(recargas.recargas[i]);
-
                 data.push(nuevaVentaPlantilla);
 
             }
 
+            var sort = data.sort((a,b)=>{
+
+                let fa = a.createdAt;
+                    fb = b.createdAt;
+
+                if(fa < fb){
+                    return -1;
+                }    
+
+                if(fa>fb){
+                    return 1;
+                }
+                return 0;
+
+            });
+
             return res.json({
                 acumulado:sumaRecargas-sumGastos,
-                ventas:data,
+                ventas:sort,
                 last:new Date()
             });
 
