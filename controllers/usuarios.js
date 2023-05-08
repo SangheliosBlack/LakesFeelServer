@@ -309,8 +309,11 @@ const fs = require("fs");
                 nuevaVentaPlantilla.servicio = 0;
                 nuevaVentaPlantilla.negocio = '';
                 nuevaVentaPlantilla.__v = 0;
-                nuevaVentaPlantilla.createdAt = new Date();
-                nuevaVentaPlantilla.updatedAt = new Date();
+                nuevaVentaPlantilla.createdAt = recargas.recargas[i].createdAt;
+                nuevaVentaPlantilla.updatedAt = recargas.recargas[i].updatedAt;
+
+                console.log(recargas.recargas[i]);
+
                 data.push(nuevaVentaPlantilla);
 
             }

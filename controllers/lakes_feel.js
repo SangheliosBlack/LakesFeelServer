@@ -8,7 +8,7 @@ var controller = {
 
         try {
             
-            const usuario = await Usuario.findById('6352dde2642e410016f994fc');
+            const usuario = await Usuario.findById(req.body._id);
 
             return res.status(200).json(usuario);
 
@@ -27,8 +27,7 @@ var controller = {
             
             const newRecarga = new Recarga(req.body);
 
-
-            await Usuario.findByIdAndUpdate({'_id':'6352dde2642e410016f994fc'},{$push:{recargas:newRecarga}});
+            await Usuario.findByIdAndUpdate({'_id':req.body.usuario},{$push:{recargas:newRecarga}});
 
             return res.status(200).json({ok:true});
 
