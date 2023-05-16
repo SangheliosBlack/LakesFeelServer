@@ -108,6 +108,10 @@ const UsuarioSchema =  Schema({
         type:String,
         require:false
     },
+    pulsera:{
+        type:Schema.Types.ObjectId,
+        require:false
+    },
     recargas:[
         {
             type:Schema(
