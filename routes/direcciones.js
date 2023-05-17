@@ -1,4 +1,4 @@
-const controller = require('../controllers/direcciones');
+    const controller = require('../controllers/direcciones');
 const {validarJWT} = require('../middlewares/validar-jwt');
 const {Router} = require('express');
 
