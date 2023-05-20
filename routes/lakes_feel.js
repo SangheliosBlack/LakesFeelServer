@@ -13,8 +13,8 @@ router.post('/generarPulseras',controller.crearPulseras);
 
 router.post('/calcularEntradasVendidas',controller.calcularEntradasVendidas);
 router.post('/sincronizarPulsera',controller.sincronizarPulsera);
-router.post('/calcularRecargas',controller.calcularRecargas);
-router.post('/calcularEquipo',controller.calcularEquipo);
 
+
+router.post('/admin',controller.admin);
 
 module.exports = router;

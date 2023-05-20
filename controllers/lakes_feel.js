@@ -1,4 +1,5 @@
 const Usuario = require('../models/usuario');
+const Venta = require('../models/venta');
 const Recarga = require('../models/recarga');
 const Pulsera = require('../models/pulsera');
 const { validateRequestWithBody } = require('twilio/lib/webhooks/webhooks');
@@ -83,23 +84,21 @@ var controller = {
     },
     calcularEntradasVendidas:async(req,res)=>{
 
-        const pulseras = await Pulsera.find({recargas:{$exists: true, $not: {$size: 0}}}).count();
-
-        return res.status(200).json({pulseras});
+        
 
     },
-    calcularEquipo:async(req,res)=>{
+    admin:async(req,res)=>{
 
-        const listaRecargas = await Usuario.find({campox:true});
-        const listaVentas = await Usuario.find({campoy:true});
-
-        return res.status(200).json({
-            usuarios_recargas:listaRecargas,
-            usuatios_venta:listaVentas
-        });
-
-    },
-    calcularRecargas:async(req,res)=>{
+        var ventas = await Venta.aggregate([
+            {
+                $match:{}
+            },{
+                $group:{
+                    _id:'',
+                    count:{$sum:"$total"}
+                }
+            }
+        ]);
 
         var recargas = await Usuario.aggregate([
             {
@@ -114,9 +113,23 @@ var controller = {
             }
         ]);
 
+        const pulseras = await Pulsera.find({recargas:{$exists: true, $not: {$size: 0}}}).count();
+
+        const usuarios = await Usuario.find().count();
+
+
+        const listaRecargas = await Usuario.find({repartidor:true});
+        const listaVentas = await Usuario.find({hibrido:true});
+
+        listaRecargas.push(listaVentas);
+
         return res.status(200).json({
-            recargas
-        })
+            ventas:ventas[0].count,
+            recargas:recargas[0].count,
+            pulseras:pulseras,
+            usuarios:usuarios
+        });
+        
 
     }
 
