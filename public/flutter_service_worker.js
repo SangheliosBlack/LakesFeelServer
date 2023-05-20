@@ -3,7 +3,7 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
-  "assets/AssetManifest.json": "3a45ff4e8c0a5d9a27323f69599a0bef",
+  "assets/AssetManifest.json": "701be065146fe39d2d70b48ce996dddf",
 "assets/assets/images/artistas/abril_vega.png": "ea47d1a42f843768b01421657453bf1e",
 "assets/assets/images/artistas/alexo.png": "e9c0ef0c4b11a1798a2d8ca00a58fa48",
 "assets/assets/images/artistas/alex_g.png": "9bf83b84587782b448ca9e51310b67c0",
@@ -18,6 +18,7 @@ const RESOURCES = {
 "assets/assets/images/artistas/fakers.png": "ca59fb2b9ffac9b8ae955124841d5fc9",
 "assets/assets/images/artistas/house_tumblr.png": "4f864399698d0b5da9c7c97396b1e57c",
 "assets/assets/images/artistas/jdez.png": "2a98965f817281e4f822e0dafee37383",
+"assets/assets/images/artistas/JOAC.png": "f9d40f55ce3d3838b37285f771a95797",
 "assets/assets/images/artistas/jorge_escalante.png": "0ac4a22975e9c7145c2ba406dd43c812",
 "assets/assets/images/artistas/koude.png": "6bb3dffb71b3143f90091c5132dc673b",
 "assets/assets/images/artistas/la_shei.png": "25256a2b47bcefcc18ca2a7d2e15af60",
@@ -324,9 +325,9 @@ const RESOURCES = {
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "f9fdcab83219a14c67162e0ac46c3bf4",
-"/": "f9fdcab83219a14c67162e0ac46c3bf4",
-"main.dart.js": "a5ec61af0030391a7eb594b3ea68d7f8",
+"index.html": "79b12d392a93f1c4ddcef45ea710cc79",
+"/": "79b12d392a93f1c4ddcef45ea710cc79",
+"main.dart.js": "7dca576db5a7d8aec17227893f2d70ef",
 "manifest.json": "c8f65c56cbb2681d8a418544fc343768",
 "version.json": "041897a6572f3a85290971fa1afa65dc"
 };
