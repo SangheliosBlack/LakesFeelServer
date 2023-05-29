@@ -66,11 +66,13 @@ var controller = {
 
         } catch (error) {
 
+            console.log('error');
+
             const pulsera = await Pulsera.findOne({numero:req.body._id});
 
                 console.log(pulsera);
 
-                if(pulsera){
+                if(pulsera){    
 
                     const usuario = new Usuario();
     
@@ -99,6 +101,7 @@ var controller = {
                     usuario.cesta.productos = [];
                     usuario.cesta.total = 0;
                     usuario.cesta.tarjeta = '';
+                    usuario.cesta.codigo = '';
                     usuario.cesta.efectivo = '';
                     usuario.cesta.direccion = {};
                     usuario.cesta.direccion._id = pulsera._id;
