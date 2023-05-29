@@ -24,6 +24,8 @@ var controller = {
 
                 const pulsera = await Pulsera.findOne({numero:req.body._id});
 
+                console.log(pulsera);
+
                 if(pulsera){
 
                     const usuario = new Usuario();
@@ -63,6 +65,8 @@ var controller = {
 
 
         } catch (error) {
+
+            console.log(error);
             
             return res.status(400).json({ok:false})
 
