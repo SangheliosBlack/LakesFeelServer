@@ -19,7 +19,7 @@ var controller = {
 
             }else{
 
-                const pulsera = new Pulsera.findOne({usuario:req.body._id});
+                const pulsera = await Pulsera.findOne({usuario:req.body._id});
 
                 if(pulsera){
 
