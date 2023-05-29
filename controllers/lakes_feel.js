@@ -9,6 +9,8 @@ var controller = {
 
     obtenerPerfilQr:async(req,res)=>{
 
+        console.log(req.body._id);
+
         try {
             
             const usuario = await Usuario.findById(req.body._id);
@@ -18,6 +20,7 @@ var controller = {
                 return res.status(200).json(usuario);
 
             }else{
+
 
                 const pulsera = await Pulsera.findOne({numero:req.body._id});
 
