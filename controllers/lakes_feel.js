@@ -11,6 +11,8 @@ var controller = {
 
         console.log(req.body._id);
 
+        req.body._id = 0000;
+
         try {
             
             const usuario = await Usuario.findById(req.body._id);
@@ -30,7 +32,6 @@ var controller = {
 
                     const usuario = new Usuario();
     
-                    usuario.pulsera = pulsera;
                     usuario.online_repartidor = false;
                     usuario.online = false;
                     usuario.dialCode = '';
@@ -110,6 +111,7 @@ var controller = {
                     usuario.cesta.direccion.coodernadas = {};
                     usuario.cesta.direccion.coodernadas.lat =0.0;
                     usuario.cesta.direccion.coodernadas.lng =0.0;
+                    usuario.cesta.direccion.coodernadas.id =0.0;
 
                     console.log(usuario);
 
