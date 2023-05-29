@@ -1,4 +1,5 @@
 const Producto = require('../models/producto');
+const Pulsera = require('../models/pulsera');
 const s3 = require("../config/s3.config.js");
 const Usuario = require('../models/usuario');
 const { repartidores } = require('./test');
@@ -6,6 +7,7 @@ const Venta = require('../models/venta');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require("fs");
+const usuario = require('../models/usuario');
 
  var controller = {
     updateDireccionFavorita : async(req,res)=>{
@@ -284,6 +286,16 @@ const fs = require("fs");
             const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
             
             var recargas = await Usuario.findById(req.body.usuario);
+
+            const pulsera = Pulsera.findOne({usuario:req.body.usuario});
+
+            if(pulsera){
+
+                var bubble = recargas.recargas.concat(pulsera.recargas);
+
+                recargas = bubble;
+
+            }
             
             const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
 
