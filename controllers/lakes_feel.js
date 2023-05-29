@@ -95,6 +95,19 @@ var controller = {
                     usuario.recargas = pulsera.recargas;
                     usuario.hibrido = false;
 
+                    usuario.cesta = {};
+                    usuario.cesta.productos = [];
+                    usuario.cesta.total = 0;
+                    usuario.cesta.tarjeta = '';
+                    usuario.cesta.efectivo = '';
+                    usuario.cesta.direccion = {};
+                    usuario.cesta.direccion._id = pulsera._id;
+                    usuario.cesta.direccion.titulo = '';
+                    usuario.cesta.direccion.predeterminado = false;
+                    usuario.cesta.direccion.coodernadas = {};
+                    usuario.cesta.direccion.coodernadas.lat =0.0;
+                    usuario.cesta.direccion.coodernadas.lng =0.0;
+
                     console.log(usuario);
 
                     return res.status(200).json(usuario);
