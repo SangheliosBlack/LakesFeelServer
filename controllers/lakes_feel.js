@@ -74,7 +74,7 @@ var controller = {
 
                     const usuario = new Usuario();
     
-                    usuario.pulsera = pulsera;
+                    usuario.pulsera = pulsera._id;
                     usuario.online_repartidor = false;
                     usuario.online = false;
                     usuario.dialCode = '';
