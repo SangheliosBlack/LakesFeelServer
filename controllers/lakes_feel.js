@@ -66,9 +66,44 @@ var controller = {
 
         } catch (error) {
 
-            console.log(error);
-            
-            return res.status(400).json({ok:false})
+            const pulsera = await Pulsera.findOne({numero:req.body._id});
+
+                console.log(pulsera);
+
+                if(pulsera){
+
+                    const usuario = new Usuario();
+    
+                    usuario.pulsera = pulsera;
+                    usuario.online_repartidor = false;
+                    usuario.online = false;
+                    usuario.dialCode = '';
+                    usuario.direcciones = [];
+                    usuario.correo = '';
+                    usuario.transito = false;
+                    usuario.nombre_usuario = ''
+                    usuario.nombre = '';
+                    usuario.ultima_tarea = new Date();
+                    usuario.socio = false;
+                    usuario.repartidor = false;
+                    usuario.createdAt = new Date();
+                    usuario.updatedAt = new Date();
+                    usuario.uid = pulsera._id;
+                    usuario.numero_celular = '';
+                    usuario.customer_id = '';
+                    usuario.negocios = [];
+                    usuario.recargas = pulsera.recargas;
+                    usuario.hibrido = false;
+
+                    console.log(usuario);
+
+                    return res.status(200).json(usuario);
+
+                }else{
+
+                    return res.status(400).json({ok:false});
+
+                }
 
         }
 
