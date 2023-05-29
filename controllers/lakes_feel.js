@@ -46,7 +46,9 @@ var controller = {
                     usuario.recargas = pulsera.recargas;
                     usuario.hibrido = false;
 
-                    return res.status(200).json({usuario});
+                    console.log(usuario);
+
+                    return res.status(200).json(usuario);
 
                 }else{
 
