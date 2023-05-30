@@ -22,74 +22,20 @@ var controller = {
 
             }else{
 
+                return res.status(400).json({ok:false});
 
-                const pulsera = await Pulsera.findOne({numero:req.body._id});
-
-                console.log(pulsera);
-
-                if(pulsera){    
-
-                    const usuario = new Usuario();
-    
-                    usuario.online_repartidor = false;
-                    usuario.online = false;
-                    usuario.dialCode = '';
-                    usuario.direcciones = [];
-                    usuario.correo = '';
-                    usuario.transito = false;
-                    usuario.nombre_usuario = ''
-                    usuario.nombre = '';
-                    usuario.ultima_tarea = new Date();
-                    usuario.socio = false;
-                    usuario.repartidor = false;
-                    usuario.createdAt = new Date();
-                    usuario.updatedAt = new Date();
-                    usuario._id =mongoose.Types.ObjectId(pulsera._id) ;
-                    usuario.numero_celular = '';
-                    usuario.customer_id = '';
-                    usuario.negocios = [];
-                    usuario.recargas = pulsera.recargas;
-                    usuario.hibrido = false;
-
-                    usuario.cesta = {};
-                    usuario.cesta.productos = [];
-                    usuario.cesta.total = 0;
-                    usuario.cesta.tarjeta = '';
-                    usuario.cesta.codigo = '';
-                    usuario.cesta.efectivo = '';
-                    usuario.cesta.direccion = {};
-                    usuario.cesta.direccion._id = pulsera._id;
-                    usuario.cesta.direccion.titulo = '';
-                    usuario.cesta.direccion.predeterminado = false;
-                    usuario.cesta.direccion.coodernadas = {};
-                    usuario.cesta.direccion.coodernadas.lat =0.0;
-                    usuario.cesta.direccion.coodernadas.lng =0.0;
-                    usuario.cesta.direccion.coodernadas.id =0.0;
-
-                    console.log(usuario);
-
-                    return res.status(200).json(usuario);
-
-                }else{
-
-                    return res.status(400).json({ok:false});
-
-                }
             }
 
 
         } catch (error) {
 
-            console.log(error);
-            console.log('error');
-
             const pulsera = await Pulsera.findOne({numero:req.body._id});
-
-                console.log(pulsera);
 
                 if(pulsera){    
 
-                    const usuario = new Usuario();
+                    const usuarioLigado = await Usuario.findById({_id:pulsera.usuario});
+
+                    var usuario = new Usuario();
     
                     usuario.online_repartidor = false;
                     usuario.online = false;
@@ -126,7 +72,13 @@ var controller = {
                     usuario.cesta.direccion.coodernadas.lng =0.0;
                     usuario.cesta.direccion.coodernadas.id =0.0;
 
-                    console.log(usuario);
+                    if(usuarioLigado){
+
+                        usuario.nombre = usuarioLigado.nombre;
+                        usuario.pulsera = pulsera._id;
+
+                    }
+
 
                     return res.status(200).json(usuario);
 
@@ -159,7 +111,7 @@ var controller = {
 
                 if(pulsera){
 
-                    await Pulsera.findByIdAndUpdate({_id:pulsera._id},{$push:{recargas:newRecarga}});
+                    await Pulsera.findByIdAndUpdate({_id:req.body.usuario},{$push:{recargas:newRecarga}});
 
                     return res.status(200).json({ok:true});
 
@@ -174,6 +126,8 @@ var controller = {
 
         } catch (error) {
 
+
+            console.log(error);
             
             return res.status(400).json({ok:false});
 
