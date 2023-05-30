@@ -4,14 +4,13 @@ const Recarga = require('../models/recarga');
 const Pulsera = require('../models/pulsera');
 const { validateRequestWithBody } = require('twilio/lib/webhooks/webhooks');
 const pulsera = require('../models/pulsera');
+const mongoose = require('mongoose');
 
 var controller = {
 
     obtenerPerfilQr:async(req,res)=>{
 
-        console.log(req.body._id);
-
-        req.body._id = 0000;
+        
 
         try {
             
@@ -28,7 +27,7 @@ var controller = {
 
                 console.log(pulsera);
 
-                if(pulsera){
+                if(pulsera){    
 
                     const usuario = new Usuario();
     
@@ -45,12 +44,27 @@ var controller = {
                     usuario.repartidor = false;
                     usuario.createdAt = new Date();
                     usuario.updatedAt = new Date();
-                    usuario.uid = pulsera._id;
+                    usuario._id =mongoose.Types.ObjectId(pulsera._id) ;
                     usuario.numero_celular = '';
                     usuario.customer_id = '';
                     usuario.negocios = [];
                     usuario.recargas = pulsera.recargas;
                     usuario.hibrido = false;
+
+                    usuario.cesta = {};
+                    usuario.cesta.productos = [];
+                    usuario.cesta.total = 0;
+                    usuario.cesta.tarjeta = '';
+                    usuario.cesta.codigo = '';
+                    usuario.cesta.efectivo = '';
+                    usuario.cesta.direccion = {};
+                    usuario.cesta.direccion._id = pulsera._id;
+                    usuario.cesta.direccion.titulo = '';
+                    usuario.cesta.direccion.predeterminado = false;
+                    usuario.cesta.direccion.coodernadas = {};
+                    usuario.cesta.direccion.coodernadas.lat =0.0;
+                    usuario.cesta.direccion.coodernadas.lng =0.0;
+                    usuario.cesta.direccion.coodernadas.id =0.0;
 
                     console.log(usuario);
 
@@ -61,12 +75,12 @@ var controller = {
                     return res.status(400).json({ok:false});
 
                 }
-
             }
 
 
         } catch (error) {
 
+            console.log(error);
             console.log('error');
 
             const pulsera = await Pulsera.findOne({numero:req.body._id});
@@ -90,7 +104,7 @@ var controller = {
                     usuario.repartidor = false;
                     usuario.createdAt = new Date();
                     usuario.updatedAt = new Date();
-                    usuario.uid = pulsera._id;
+                    usuario._id =mongoose.Types.ObjectId(pulsera._id) ;
                     usuario.numero_celular = '';
                     usuario.customer_id = '';
                     usuario.negocios = [];
@@ -135,13 +149,13 @@ var controller = {
 
             if(usuario){
 
-                await Usuario.findByIdAndUpdate({'_id':req.body.usuario},{$push:{recargas:newRecarga}});
+                await Usuario.findByIdAndUpdate({_id:req.body.usuario},{$push:{recargas:newRecarga}});
     
                 return res.status(200).json({ok:true});
 
             }else{
 
-                const pulsera = Pulsera.findOne({usuario:req.body.usuario});
+                const pulsera = Pulsera.findById(req.body.usuario);
 
                 if(pulsera){
 
