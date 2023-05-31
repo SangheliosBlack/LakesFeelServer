@@ -237,7 +237,7 @@ var controller = {
             }
         ]);
 
-        if(recargasPulseras.length < 0){
+        if(recargasPulseras.length <= 0){
 
             var pre = {};
 
