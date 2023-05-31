@@ -237,6 +237,16 @@ var controller = {
             }
         ]);
 
+        if(recargasPulseras.length < 0){
+
+            var pre = {};
+
+            pre.count = 0;
+
+            recargasPulseras.push(pre);
+
+        }
+
         const pulseras = await Pulsera.find({recargas:{$exists: true, $not: {$size: 0}}}).count();
 
         const usuarios = await Usuario.find().count();
