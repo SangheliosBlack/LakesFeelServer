@@ -287,13 +287,16 @@ const usuario = require('../models/usuario');
             
             var recargas = await Usuario.findById(req.body.usuario);
 
-            const pulsera = Pulsera.findOne({usuario:req.body.usuario});
+            const pulsera = await Pulsera.findOne({usuario:req.body.usuario});
+
 
             if(pulsera){
 
                 var bubble = recargas.recargas.concat(pulsera.recargas);
 
-                recargas = bubble;
+                recargas.recargas = bubble;
+
+                console.log(bubble);
 
             }
             

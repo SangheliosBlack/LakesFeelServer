@@ -33,7 +33,15 @@ var controller = {
 
                 if(pulsera){    
 
-                    const usuarioLigado = await Usuario.findById({_id:pulsera.usuario});
+                    var usuarioLigado = null;
+
+                    
+                    if(pulsera.usuario){
+                        
+                        usuarioLigado = await Usuario.findById({_id:pulsera.usuario});
+                    
+                    }
+
 
                     var usuario = new Usuario();
     
@@ -93,13 +101,19 @@ var controller = {
     },
     agregarAbonoCliente:async(req,res)=>{
 
+        console.log(req.body.usuario);
+
         try {
             
             const newRecarga = new Recarga(req.body);
 
-            const usuario = Usuario.findById(req.body.usuario);
+            const usuario = await Usuario.findById(req.body.usuario);
+
+            console.log(usuario);
 
             if(usuario){
+
+                console.log('usuario');
 
                 await Usuario.findByIdAndUpdate({_id:req.body.usuario},{$push:{recargas:newRecarga}});
     
@@ -107,7 +121,11 @@ var controller = {
 
             }else{
 
-                const pulsera = Pulsera.findById(req.body.usuario);
+                console.log('pulsera');
+
+                const pulsera = await Pulsera.findById(req.body.usuario);
+
+                console.log(pulsera);
 
                 if(pulsera){
 
@@ -206,6 +224,19 @@ var controller = {
             }
         ]);
 
+        var recargasPulseras = await Pulsera.aggregate([
+            {
+                $match:{}
+            },{
+                $unwind:'$recargas'
+            },{
+                $group:{
+                    _id:'',
+                    count:{$sum:"$recargas.cantidad"}
+                }
+            }
+        ]);
+
         const pulseras = await Pulsera.find({recargas:{$exists: true, $not: {$size: 0}}}).count();
 
         const usuarios = await Usuario.find().count();
@@ -218,7 +249,7 @@ var controller = {
 
         return res.status(200).json({
             ventas:ventas[0].count,
-            recargas:recargas[0].count,
+            recargas:recargas[0].count + recargasPulseras[0].count,
             pulseras:pulseras,
             usuarios:usuarios
         });
