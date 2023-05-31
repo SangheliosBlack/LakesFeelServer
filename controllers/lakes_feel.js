@@ -18,7 +18,27 @@ var controller = {
 
             if(usuario){
 
-                return res.status(200).json(usuario);
+
+                if(usuario.pulsera){
+
+                    const pulsera = await Pulsera.findById(usuario.pulsera);
+    
+                    if(pulsera){
+    
+                        return res.status(200).json(usuario);
+                    
+                    }else{
+                        
+                        return res.status(400).json({ok:false});
+    
+                    }
+
+                }else{
+
+                    return res.status(400).json({ok:false});
+
+                }
+                
 
             }else{
 
@@ -113,11 +133,29 @@ var controller = {
 
             if(usuario){
 
-                console.log('usuario');
+                if(usuario.pulsera){
 
-                await Usuario.findByIdAndUpdate({_id:req.body.usuario},{$push:{recargas:newRecarga}});
+                    const pulsera = await Pulsera.findById(usuario.pulsera);
     
-                return res.status(200).json({ok:true});
+                    if(pulsera){
+    
+                        await Usuario.findByIdAndUpdate({_id:req.body.usuario},{$push:{recargas:newRecarga}});
+            
+                        return res.status(200).json({ok:true});
+                    
+                    }else{
+                        
+                        return res.status(400).json({ok:false});
+    
+                    }
+
+                }else{
+
+                    return res.status(400).json({ok:false});
+
+                }
+
+
 
             }else{
 
