@@ -15,606 +15,158 @@ const moment = require('moment');
 const Axios = require('axios');
 const pedido = require('../models/pedido');
 const Abono = require('../models/abono');
+const Pulsera = require('../models/pulsera');
 const { json } = require('express');
 const Estado = require("../models/estado");
 const { TrustProductsEntityAssignmentsList } = require('twilio/lib/rest/trusthub/v1/trustProducts/trustProductsEntityAssignments');
 
 var controller = {
 
-    
     crearPedido:async (req,res)=>{
 
 
         var {total,tarjeta,productos,efectivo,codigo,direccion} = JSON.parse(req.body.cesta);
 
         var {abonoReq,envio,usuario,servicio,customer,tienda_ropa,liquidado,apartado} = req.body;
-    
-        var envioValores = JSON.parse(req.body.envioValores)
-    
-        const decimalCount = num => {
-            const numStr = String(num);
-            if (numStr.includes('.')) {
-               return numStr.split('.')[1].length;
-            };
-            return 0;
-        }
-    
-        if(!tarjeta){
-            efectivo = true;
-        }
-    
-        var venta = new Venta();
-    
-        venta.total = total;
-        venta.envioPromo = codigo ? envio.toFixed(2) :0;
-        venta.codigo_promo = codigo ? codigo : '';
-        venta.envio = envio.toFixed(2);
-        venta.direccion = direccion;
-        venta.efectivo = efectivo;
-        venta.servicio = servicio;
-        venta.usuario = usuario;
-    
-        if(tienda_ropa){
 
-            venta.apartado = apartado;
-            venta.plus = true;
-            venta.liquidado = liquidado;
+        //
 
-            if(venta.apartado){
+        Venta.
+        find({usuario:mongoose.Types.ObjectId(req.body.usuario)}).
+        sort({'updatedAt':-1}).
+        populate('pedidos.repartidor').
+        populate({
+            path:'pedidos.repartidor',
+            populate:{path:'negocios'},
+        }).
+        exec( async function(err,data){
 
-                var abonos = [];
+            if(err) {
 
-                var abono = new Abono();
-
-                abono.cantidad =  abonoReq;
-                abono.titulo = 'Apartado'
-                abono.fecha = new Date();
-
-                abonos.push(abono);
-
-                venta.abonos = abonos;
-
-            }else{
-
-                var abonos = [];
-
-                var abono = new Abono();
-
-                abono.cantidad =   total-10.2;
-                abono.fecha = new Date();
-                abono.titulo = 'Compra'
-
-                abonos.push(abono);
-
-                venta.abonos = abonos;
+                return res.json({ok:false});
 
             }
-    
-            var pedidos = [];
-        
-            for(const element in productos){
+            const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
+            
+            var recargas = await Usuario.findById(req.body.usuario);
 
-                await ListaProductos.updateMany(
-                
-                    {
-                        "tienda":productos[element].tienda,
-                    },{
-                        $inc:{
-                            'productos.$[i].cantidad':-productos[element].cantidad,
-                        }
-                    },
-                    {
-                        arrayFilters:[
-                            {
-                                "i._id":mongoose.Types.ObjectId(productos[element]._id),
-                            }
-                        ]
-                    }
-                    
-                )
-        
-                if(!pedidos.some(elem=> elem.tienda == productos[element].tienda)){
-        
-                    var subElement = {};
-        
-                    var datos_tienda = await Tienda.findOne({'nombre':productos[element].tienda})
-    
-                    var usuarioData = await Usuario.findById({_id:usuario});
-                    var usuarioVenta = new UsuarioVenta();
-                    var direccion_negocio = new Direccion();
-    
-                    direccion_negocio.coordenadas={};
-                    direccion_negocio.coordenadas.lat = 0.0;
-                    direccion_negocio.coordenadas.lng = 0.0;
-
-                    direccion_negocio.titulo = '';
-                    direccion_negocio.predeterminado = false;
-                    
-    
-                    usuarioVenta.imagen = 'https://www.blogdelfotografo.com/wp-content/uploads/2020/02/apoyado12-scaled.jpg';
-                    usuarioVenta.nombre = usuarioData.nombre;
-                    usuarioVenta._id = usuarioData._id;
-                        
-                    subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
-                    subElement.tienda = productos[element].tienda;
-                    subElement.productos = [productos[element]];
-                    subElement.imagen = '';
-                    subElement.punto_venta = '';
-                    subElement.efectivo = efectivo;
-                    subElement.usuario = usuarioVenta;
-                    subElement.tiempo_espera = 0;
-                    subElement.envio = 0;
-                    subElement.direccion_negocio = direccion_negocio;
-                    subElement.direccion_cliente = direccion;
-                    
-                    pedidos.push(subElement);
-        
-                }else{
-        
-                    var objIndex = pedidos.findIndex((obj => obj.tienda == productos[element].tienda));
-                    pedidos[objIndex].total = pedidos[objIndex].total + ((productos[element].precio + productos[element].extra) * productos[element].cantidad);
-                    pedidos[objIndex].productos.push(productos[element]);
-                    
-                }
+            const pulsera = await Pulsera.findOne({usuario:req.body.usuario});
 
 
+            if(pulsera){
+
+                var bubble = recargas.recargas.concat(pulsera.recargas);
+
+                recargas.recargas = bubble;
+
+                console.log(bubble);
 
             }
-        
-            var pedidosSchema = [];
             
-            for(const element in pedidos){
-                
-                var pedidosModel = new Pedido(pedidos[element]);
-        
-                pedidosModel.entregado_cliente = false;
-                pedidosModel.entregado_repartidor = false;
-                pedidosModel.confirmado = false;
-                pedidosModel.createdAt = new Date();
-                pedidosModel.updatedAt = new Date();
+            const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
 
-                pedidosModel.repartidor_domicilio = false;
-                pedidosModel.repartidor_calificado = false;
+
+            if((sumaRecargas-sumGastos)>total){
+
+                var venta = new Venta();
     
-                pedidosModel.id_venta = venta._id;
-                pedidosModel.codigo_repartidor = Math.floor(1000 + Math.random() * 9000);
-                pedidosModel.codigo_cliente = Math.floor(1000 + Math.random() * 9000);
+                venta.total = total;
+                venta.envioPromo = codigo ? envio.toFixed(2) :0;
+                venta.codigo_promo = codigo ? codigo : '';
+                venta.envio = envio.toFixed(2);
+                venta.direccion = direccion;
+                venta.efectivo = true;
+                venta.servicio = servicio;
+                venta.usuario = usuario;
+                venta.apartado = apartado;
+                venta.plus = true;
+                venta.liquidado = liquidado;
+                venta.abonos = [];
     
-                pedidosSchema.push(pedidosModel);
-            }
-            
-            venta.pedidos = pedidosSchema;
-            venta.negocio = pedidosSchema[0].tienda;
-
-            
-            await venta.save();
+                var pedidos = [];
+        
+                for(const element in productos){
+        
+                    if(!pedidos.some(elem=> elem.tienda == productos[element].tienda)){
+        
+                        var subElement = {};
     
-            await Usuario.findByIdAndUpdate({_id:req.uid},{'cesta.productos':[],apartado:false,'envio_promo':codigo ? true :false});
-    
-            return res.status(200).json(venta);
+                        var usuarioData = await Usuario.findById({_id:usuario});
+                        var usuarioVenta = new UsuarioVenta();
+                        var direccion_negocio = new Direccion();
 
-        }else{
+                        direccion_negocio.coordenadas={};
+                        direccion_negocio.coordenadas.lat = 0.0;
+                        direccion_negocio.coordenadas.lng = 0.0;
+                        direccion_negocio.titulo = '';
+                        direccion_negocio.predeterminado = false;
+                
 
-            const version = req.header('x-version');
-
-            if(version){
-
-                const estado = await Estado.findOne({'_id':'644031c2199bafb28ba36532'});
-
-                if(version== estado.version && !estado.mantenimiento  && !estado.cerrada){
-
-                    if(efectivo){
-    
-                        var pedidos = [];
+                        usuarioVenta.imagen = 'https://www.blogdelfotografo.com/wp-content/uploads/2020/02/apoyado12-scaled.jpg';
+                        usuarioVenta.nombre = usuarioData.nombre;
+                        usuarioVenta._id = usuarioData._id;
                     
-                        for(const element in productos){
-                    
-                            if(!pedidos.some(elem=> elem.tienda == productos[element].tienda)){
-                    
-                                var subElement = {};
-                    
-                                var datos_tienda = await Tienda.findOne({'nombre':productos[element].tienda})
+                        subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
+                        subElement.tienda = productos[element].tienda;
+                        subElement.productos = [productos[element]];
+                        subElement.imagen = '';
+                        subElement.punto_venta = '';
+                        subElement.efectivo = efectivo;
+                        subElement.usuario = usuarioVenta;
+                        subElement.tiempo_espera = 0;
+                        subElement.envio = 0;
+                        subElement.direccion_negocio = direccion_negocio;
+                        subElement.direccion_cliente = direccion;
                 
-                                if(datos_tienda.online== false){
-            
-                                    return res.status(400).json({ok:false});
-            
-                                }
-                
-                                var usuarioData = await Usuario.findById({_id:usuario});
-                                var usuarioVenta = new UsuarioVenta();
-                                var direccion_negocio = new Direccion();
-                
-                                direccion_negocio.coordenadas = datos_tienda.coordenadas;
-                                direccion_negocio.titulo = datos_tienda.direccion;
-                                direccion_negocio.predeterminado = false;
-                                
-                                usuarioVenta.imagen = 'https://www.blogdelfotografo.com/wp-content/uploads/2020/02/apoyado12-scaled.jpg';
-                                usuarioVenta.nombre = usuarioData.nombre;
-                                usuarioVenta._id = usuarioData._id;
-                                    
-                                subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
-                                subElement.tienda = productos[element].tienda;
-                                subElement.productos = [productos[element]];
-                                subElement.imagen = datos_tienda.imagen_perfil;
-                                subElement.punto_venta = datos_tienda.punto_venta;
-                                subElement.efectivo = efectivo;
-                                subElement.usuario = usuarioVenta;
-                                subElement.tiempo_espera = datos_tienda.tiempo_espera;
-                                subElement.envio = envioValores.find(item=>item.tienda ===  productos[element].tienda ).cantidad;
-                                subElement.direccion_negocio = direccion_negocio;
-                                subElement.direccion_cliente = direccion;
-                                
-                                var rutaR = await Axios.get('https://maps.googleapis.com/maps/api/directions/json',{
-            
-                                    params:{
-                                        key:process.env.GOOGLE_DIRECTIONS_API,
-                                        origin:`${direccion_negocio.coordenadas.latitud},${direccion_negocio.coordenadas.longitud}`,
-                                        destination:`${direccion.coordenadas.lat},${direccion.coordenadas.lng}`,
-                                        language:'es-419',
-                                        region:'mx',
-                                        mode:'driving'
-                                    }
-            
-                                });
-                
-                                var ruta = new Ruta();
-                
-                                ruta.bounds =   rutaR.data.routes[0].bounds;
-                                ruta.overview_polyline =   rutaR.data.routes[0].overview_polyline;
-                                ruta.distance = rutaR.data.routes[0].legs[0].distance;
-                                ruta.duration = rutaR.data.routes[0].legs[0].duration;
-                
-                                subElement.ruta = ruta;
-                
-                                pedidos.push(subElement);
-                    
-                            }else{
-                    
-                                var objIndex = pedidos.findIndex((obj => obj.tienda == productos[element].tienda));
-                                pedidos[objIndex].total = pedidos[objIndex].total + ((productos[element].precio + productos[element].extra) * productos[element].cantidad);
-                                pedidos[objIndex].productos.push(productos[element]);
-                                
-                            }
-                        }
-                    
-                        var pedidosSchema = [];
-                        
-                        for(const element in pedidos){
-                            
-                            var pedidosModel = new Pedido(pedidos[element]);
-                    
-                            pedidosModel.entregado_cliente = false;
-                            pedidosModel.entregado_repartidor = false;
-                            pedidosModel.confirmado = false;
-                            pedidosModel.createdAt = new Date();
-                            pedidosModel.updatedAt = new Date();
-            
-                            pedidosModel.repartidor_domicilio = false;
-                            pedidosModel.repartidor_calificado = false;
-                
-                            pedidosModel.id_venta = venta._id;
-                            pedidosModel.codigo_repartidor = Math.floor(1000 + Math.random() * 9000);
-                            pedidosModel.codigo_cliente = Math.floor(1000 + Math.random() * 9000);
-                
-                            pedidosSchema.push(pedidosModel);
-                        }
-                        
-                        venta.abonos = [];
-                        
-                        await Usuario.findByIdAndUpdate({_id:req.uid},{'cesta.productos':[],'envio_promo':codigo ? true :false});
+                        pedidos.push(subElement);
         
-                        venta.pedidos = pedidosSchema;
-        
-                        await venta.save();
-                
-                        for(const element in  pedidosSchema){
-                
-                            const data = {
-                                tokenId:pedidosSchema[element].punto_venta,
-                                titulo:`${pedidosSchema[element].tienda}, tienes un nuevo pedido`,
-                                mensaje:'Presionar para mas detalles',
-                                evento:'1',
-                                pedido:JSON.stringify(pedidosSchema[element])
-                            };
-            
-                            
-                            if(pedidosSchema[element].punto_venta){
-                                
-                                Notificacion.sendPushToOneUser(data);
-        
-                            }
-            
-                            const repartidores = await Usuario.find({notificado:false,transito:false,repartidor:true,online_repartidor:true}).sort( { ultima_tarea: 1 }).limit(1);
-        
-            
-                            if(repartidores.length > 0){
-        
-                                await Usuario.findByIdAndUpdate({'_id':repartidores[0]._id},{$set:{'ultima_tarea':new Date(),'notificado':true}});
-                                
-                                await Venta.findOneAndUpdate(
-                                    {
-                                        "_id":mongoose.Types.ObjectId(venta._id)
-                                    },
-                                    {
-                                        $set:{'pedidos.$[i].repartidor':repartidores[0]._id}
-                                    },
-                                    {
-                                        arrayFilters:[
-                                            {
-                                                "i._id":mongoose.Types.ObjectId(pedidosSchema[element]._id)
-                                            }
-                                        ]
-                                    }
-                                );
-        
-                                
-            
-                                const data = {
-                                    tokenId:repartidores[0].tokenFB,
-                                    titulo:`Tienes un nuevo pedido!`,
-                                    mensaje:'Presionar para mas detalles',
-                                    evento:'1',
-                                    pedido:JSON.stringify(pedidosSchema[element])
-                                };           
-                                
-                                if(repartidores[0].tokenFB){
-        
-                                    Notificacion.sendPushToOneUser(data);
-        
-                                }
-                            
-                            }
-                
-                        }
-                        
-                        Venta.
-                        find({usuario:mongoose.Types.ObjectId(req.uid)}).
-                        sort({'updatedAt':-1}).
-                        populate('pedidos.repartidor').
-                        populate({
-                            path:'pedidos.repartidor',
-                            populate:{path:'negocios'},
-                        }).
-                        exec(function(err,data){
-        
-                        
-                            if(err) {
-                            
-                                res.status(400).json({ok:false});
-                            
-                            }
-                        
-                            return res.status(200).json(data[0]);
-                        
-                        });
-                
                     }else{
-                
-                        const paymentIntent = await stripe.paymentIntents.create({  
-                            amount: total.toFixed(2)*100,
-                            currency: 'mxn',
-                            customer:customer,
-                            payment_method_types: ['card'],
-                            transfer_group: venta.id
-                        });
+        
+                        var objIndex = pedidos.findIndex((obj => obj.tienda == productos[element].tienda));
+                        pedidos[objIndex].total = pedidos[objIndex].total + ((productos[element].precio + productos[element].extra) * productos[element].cantidad);
+                        pedidos[objIndex].productos.push(productos[element]);
                     
-                        const paymentIntentConfirm = await stripe.paymentIntents.confirm(
-                            paymentIntent.id,
-                            {payment_method: tarjeta}
-                        );
-                    
-                        if(paymentIntentConfirm.status == 'succeeded'){
-                    
-                            venta.metodoPago = paymentIntentConfirm;
-                        
-                            
-                            var pedidos = [];
-                        
-                            for(const element in productos){
-                        
-                                if(!pedidos.some(elem=> elem.tienda == productos[element].tienda)){
-                    
-                                    var subElement = {};
-                    
-                                    var datos_tienda = await Tienda.findOne({'nombre':productos[element].tienda});
-                
-                                    if(datos_tienda.online == false){
-                                        return res.status(400).json({ok:false});
-                                    }
-                                    
-                                    var usuarioData = await Usuario.findById({_id:usuario});
-                                    var usuarioVenta = new UsuarioVenta();
-                                    var direccion_negocio = new Direccion();
-                                    
-                                    direccion_negocio.coordenadas = datos_tienda.coordenadas;
-                                    direccion_negocio.titulo = datos_tienda.direccion;
-                                    direccion_negocio.predeterminado = false;
-                                    
-                                    usuarioVenta.imagen = 'https://www.blogdelfotografo.com/wp-content/uploads/2020/02/apoyado12-scaled.jpg';
-                                    usuarioVenta.nombre = usuarioData.nombre;
-                                    usuarioVenta._id = usuarioData._id;
-                                    
-                                    subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
-                                    subElement.tienda = productos[element].tienda;
-                                    subElement.productos = [productos[element]];
-                                    subElement.imagen = datos_tienda.imagen_perfil;
-                                    subElement.punto_venta = datos_tienda.punto_venta;
-                                    subElement.efectivo = efectivo;
-                                    subElement.usuario = usuarioVenta;
-                                    subElement.tiempo_espera = datos_tienda.tiempo_espera;
-                                    subElement.envio = envioValores.find(item=>item.tienda ===  productos[element].tienda ).cantidad;
-                                    subElement.direccion_negocio = direccion_negocio;
-                                    subElement.direccion_cliente = direccion;
-                                    
-                                    
-                                    var rutaR = await Axios.get('https://maps.googleapis.com/maps/api/directions/json',{
-                                        params:{
-                                        key:process.env.GOOGLE_DIRECTIONS_API,
-                                        origin:`${direccion_negocio.coordenadas.latitud},${direccion_negocio.coordenadas.longitud}`,
-                                        destination:`${direccion.coordenadas.lat},${direccion.coordenadas.lng}`,
-                                        language:'es-419',
-                                        region:'mx',
-                                        mode:'driving'
-                                        }
-                                    });
-                
-                                    var ruta = new Ruta();
-                
-                                    ruta.bounds =   rutaR.data.routes[0].bounds;
-                                    ruta.overview_polyline =   rutaR.data.routes[0].overview_polyline;
-                                    ruta.distance = rutaR.data.routes[0].legs[0].distance;
-                                    ruta.duration = rutaR.data.routes[0].legs[0].duration;
-                
-                                    subElement.ruta = ruta;
-                
-                                    pedidos.push(subElement);
-            
-                                }else{
-                        
-                                    var objIndex = pedidos.findIndex((obj => obj.tienda == productos[element].tienda));
-                                    pedidos[objIndex].total = pedidos[objIndex].total + ((productos[element].precio + productos[element].extra) * productos[element].cantidad);
-                                    pedidos[objIndex].productos.push(productos[element]);
-                                    
-                                }
-                            }
-                        
-                            var pedidosSchema = [];
-                            
-                            for(const element in pedidos){
-                                
-                                var pedidosModel = new Pedido(pedidos[element]);
-                        
-                                pedidosModel.entregado_cliente = false;
-                                pedidosModel.entregado_repartidor = false;
-                                pedidosModel.confirmado = false;
-                                pedidosModel.createdAt = new Date();
-                                pedidosModel.updatedAt = new Date();
-                                pedidosModel.repartidor_domicilio = false;
-                                pedidosModel.repartidor_calificado = false;
-                                pedidosModel.id_venta = venta._id;
-                                pedidosModel.codigo_repartidor = Math.floor(1000 + Math.random() * 9000);
-                                pedidosModel.codigo_cliente = Math.floor(1000 + Math.random() * 9000);
-                                
-                                pedidosSchema.push(pedidosModel);
-                                
-                            }
-                            
-                            venta.abonos = [];
-                        
-                            await Usuario.findByIdAndUpdate({_id:req.uid},{'cesta.productos':[],'envio_promo':codigo ? true :false});
-            
-                            venta.pedidos = pedidosSchema;
-            
-                            await venta.save();
-                    
-                            for(const element in  pedidosSchema){
-                    
-                                const data = {
-                                    tokenId:pedidosSchema[element].punto_venta,
-                                    titulo:`${pedidosSchema[element].tienda}, tienes un nuevo pedido`,
-                                    mensaje:'Presionar para mas detalles',
-                                    evento:'1',
-                                    pedido:JSON.stringify(pedidosSchema[element])
-                                };
-                
-                                
-                                if(pedidosSchema[element].punto_venta){
-                                    
-                                    Notificacion.sendPushToOneUser(data);
-            
-                                }
-                
-                                const repartidores = await Usuario.find({notificado:false,transito:false,repartidor:true,online_repartidor:true}).sort( { ultima_tarea: 1 }).limit(1);
-            
-                
-                                if(repartidores.length > 0){
-            
-                                    await Usuario.findByIdAndUpdate({'_id':repartidores[0]._id},{$set:{'ultima_tarea':new Date()},'notificado':true});
-                                    
-                                    await Venta.findOneAndUpdate(
-                                        {
-                                            "_id":mongoose.Types.ObjectId(venta._id)
-                                        },
-                                        {
-                                            $set:{'pedidos.$[i].repartidor':repartidores[0]._id}
-                                        },
-                                        {
-                                            arrayFilters:[
-                                                {
-                                                    "i._id":mongoose.Types.ObjectId(pedidosSchema[element]._id)
-                                                }
-                                            ]
-                                        }
-                                    );
-            
-                                    
-                
-                                    const data = {
-                                        tokenId:repartidores[0].tokenFB,
-                                        titulo:`Tienes un nuevo pedido!`,
-                                        mensaje:'Presionar para mas detalles',
-                                        evento:'1',
-                                        pedido:JSON.stringify(pedidosSchema[element])
-                                    };           
-                                    
-                                    if(repartidores[0].tokenFB){
-            
-                                        Notificacion.sendPushToOneUser(data);
-            
-                                    }
-                                
-                                }
-                    
-                            }
-                            
-                            Venta.
-                            find({usuario:mongoose.Types.ObjectId(req.uid)}).
-                            sort({'updatedAt':-1}).
-                            populate('pedidos.repartidor').
-                            populate({
-                                path:'pedidos.repartidor',
-                                populate:{path:'negocios'},
-                            }).
-                            exec(function(err,data){
-            
-                                if(err) {
-                                
-                                    res.status(400).json({ok:false});
-                                
-                                }
-                            
-                                return res.status(200).json(data[0]);
-                            
-                            });
-                    
-                        }else{
-                    
-                            return res.status(400).json({ok:false,msg:paymentIntentConfirm.status});
-                    
-                        }
-                
                     }
 
-
-                }else{
-
-                    res.status(400).json({ok:false});
-
                 }
+        
+                var pedidosSchema = [];
+            
+                for(const element in pedidos){
+                
+                    var pedidosModel = new Pedido(pedidos[element]);
+        
+                    pedidosModel.entregado_cliente = false;
+                    pedidosModel.entregado_repartidor = false;
+                    pedidosModel.confirmado = false;
+                    pedidosModel.createdAt = new Date();
+                    pedidosModel.updatedAt = new Date();
+                    pedidosModel.repartidor_domicilio = false;
+                    pedidosModel.repartidor_calificado = false;
+                    pedidosModel.id_venta = venta._id;
+                    pedidosModel.codigo_repartidor = Math.floor(1000 + Math.random() * 9000);
+                    pedidosModel.codigo_cliente = Math.floor(1000 + Math.random() * 9000);
+    
+                    pedidosSchema.push(pedidosModel);
+                }
+            
+                venta.pedidos = pedidosSchema;
+                venta.negocio = pedidosSchema[0].tienda;
+
+            
+                await venta.save();
+    
+    
+                return res.status(200).json(venta);
 
             }else{
-                
-                res.status(400).json({ok:false});
+
+                return res.status(400).json({ok:false});
 
             }
 
-            
-
-        }
-
-        
-
+        });
+        //
     },
     construirPantallaPrincipalTiendas:async (req,res)=>{
 
