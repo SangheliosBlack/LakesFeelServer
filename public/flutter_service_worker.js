@@ -3,12 +3,13 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
-  "assets/AssetManifest.json": "701be065146fe39d2d70b48ce996dddf",
+  "assets/AssetManifest.json": "f9e3727316234dbf64d8f6513c5b895a",
 "assets/assets/images/artistas/abril_vega.png": "ea47d1a42f843768b01421657453bf1e",
 "assets/assets/images/artistas/alexo.png": "e9c0ef0c4b11a1798a2d8ca00a58fa48",
 "assets/assets/images/artistas/alex_g.png": "9bf83b84587782b448ca9e51310b67c0",
 "assets/assets/images/artistas/alquimia.png": "6381bb8594d1210c04c5d149b7f8a672",
 "assets/assets/images/artistas/angelo.png": "fcdb58aa0b1284c555604ee5cf20bc3e",
+"assets/assets/images/artistas/bellaco.png": "e2aff4d43fc0cf778c3c96b3fe961e5e",
 "assets/assets/images/artistas/bryan_tavarez.png": "b50dbfe35a11cf0c1afa7029adc16f79",
 "assets/assets/images/artistas/caro_rivas.png": "d966c219b898ad745faab7741a84f0c6",
 "assets/assets/images/artistas/chile.png": "b97aeb0e520c7b530dcd073b2014e7c7",
@@ -32,6 +33,7 @@ const RESOURCES = {
 "assets/assets/images/artistas/shanti.png": "91f823ce09273ef4b9758a7c25b052a8",
 "assets/assets/images/artistas/sheck.png": "831b9e05d108d1be4785e2a415d3f636",
 "assets/assets/images/artistas/st_glez.png": "09f880c0818a7474115fbace0d2757ec",
+"assets/assets/images/artistas/to.png": "629d0d1f673927162255d06c51a7bf64",
 "assets/assets/images/artistas/toxic_rabbit.png": "613742112e5dd7e95e4fa2ce23b91aef",
 "assets/assets/images/artistas/traxx.png": "3ca2bde686139b83b9166ce997d96078",
 "assets/assets/images/artistas/wild_dog.png": "cf8b7b09a7930546876b7491cefb00bc",
@@ -48,7 +50,7 @@ const RESOURCES = {
 "assets/assets/images/logo3.png": "3935f4b838399bc6b41aaa1192edeb37",
 "assets/FontManifest.json": "5a32d4310a6f5d9a6b651e75ba0d7372",
 "assets/fonts/MaterialIcons-Regular.otf": "e7069dfd19b331be16bed984668fe080",
-"assets/NOTICES": "3e79d064ca0610edeca9f73cbb7f3da8",
+"assets/NOTICES": "41109e39efe29a1b795274a1d19d8cfb",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "6d342eb68f170c97609e9da345464e5e",
 "assets/packages/font_awesome_flutter/lib/fonts/fa-brands-400.ttf": "b00363533ebe0bfdb95f3694d7647f6d",
 "assets/packages/font_awesome_flutter/lib/fonts/fa-regular-400.ttf": "0a94bab8e306520dc6ae14c2573972ad",
@@ -320,9 +322,9 @@ const RESOURCES = {
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "c2453f5f5946b587f6596058fca8a7b0",
-"/": "c2453f5f5946b587f6596058fca8a7b0",
-"main.dart.js": "42821fd43692596fbbdafa833a2a9d8d",
+"index.html": "00c8150f02ae60c800d04420bcd9c334",
+"/": "00c8150f02ae60c800d04420bcd9c334",
+"main.dart.js": "e26127cb651b8baca04e8f29630495c3",
 "manifest.json": "c8f65c56cbb2681d8a418544fc343768",
 "version.json": "041897a6572f3a85290971fa1afa65dc"
 };
