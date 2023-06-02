@@ -46,27 +46,40 @@ var controller = {
                 return res.json({ok:false});
 
             }
-            const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
-            
-            var recargas = await Usuario.findById(req.body.usuario);
-
-            const pulsera = await Pulsera.findOne({usuario:req.body.usuario});
 
 
-            if(pulsera){
+            //ULTIMA PARTE
 
-                var bubble = recargas.recargas.concat(pulsera.recargas);
+            var complex = await Pulsera.findOne({usuario:req.body.usuario});
 
-                recargas.recargas = bubble;
+            if(complex==null){
 
-                console.log(bubble);
+                complex = await Pulsera.findOne({_id:req.body.usuario});
 
             }
-            
-            const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
 
 
-            if((sumaRecargas-sumGastos)>total){
+            var gastos_usuario = await Venta.find({usuario:complex.usuario});
+            var gastos_pulsera = await Venta.find({usuario:complex._id});
+
+            var recargas_pulseras = await Pulsera.findById(complex._id);
+            var recargas_usuario = await Usuario.findById(complex.usuario);
+
+            if(gastos_pulsera == null ) {[]};
+            if(gastos_usuario == null ) {[]};
+
+            var gastos_totales = gastos_usuario.concat(gastos_pulsera);
+            var recargas_totales = recargas_usuario.recargas.concat(recargas_pulseras.recargas);
+
+            console.log(recargas_totales);
+
+            const sumGastos = gastos_totales.reduce((partialSum, a) => partialSum + a.total, 0);
+            const sumaRecargas = recargas_totales.reduce((partialSum, a) => partialSum + a.cantidad, 0);
+
+            //
+
+
+            if((sumaRecargas-sumGastos)>=total){
 
                 var venta = new Venta();
     
@@ -91,7 +104,6 @@ var controller = {
         
                         var subElement = {};
     
-                        var usuarioData = await Usuario.findById({_id:usuario});
                         var usuarioVenta = new UsuarioVenta();
                         var direccion_negocio = new Direccion();
 
@@ -103,8 +115,8 @@ var controller = {
                 
 
                         usuarioVenta.imagen = 'https://www.blogdelfotografo.com/wp-content/uploads/2020/02/apoyado12-scaled.jpg';
-                        usuarioVenta.nombre = usuarioData.nombre;
-                        usuarioVenta._id = usuarioData._id;
+                        usuarioVenta.nombre = '';
+                        usuarioVenta._id = '';
                     
                         subElement.total = (productos[element].precio + productos[element].extra) * productos[element].cantidad;
                         subElement.tienda = productos[element].tienda;

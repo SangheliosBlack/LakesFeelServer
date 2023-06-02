@@ -10,8 +10,6 @@ var controller = {
 
     obtenerPerfilQr:async(req,res)=>{
 
-        
-
         try {
             
             const usuario = await Usuario.findById(req.body._id);
@@ -22,10 +20,39 @@ var controller = {
                 if(usuario.pulsera){
 
                     const pulsera = await Pulsera.findById(usuario.pulsera);
+
+                    console.log(pulsera);
+                    console.log('zfsdfsf');
     
                     if(pulsera){
+
+                        //
+
+                        var complex = await Pulsera.findOne({usuario:req.body._id});
+
+                        console.log(complex);
+
+                        var gastos_usuario = await Venta.find({usuario:complex.usuario});
+                        var gastos_pulsera = await Venta.find({usuario:complex._id});
+
+                        var recargas_pulseras = await Pulsera.findById(complex._id);
+                        var recargas_usuario = await Usuario.findById(complex.usuario);
+
+                        if(gastos_pulsera == null ) {[]};
+                        if(gastos_usuario == null ) {[]};
+
+                        console.log('aqui');
+
+                        var gastos_totales = gastos_usuario.concat(gastos_pulsera);
+                        var recargas_totales = recargas_usuario.recargas.concat(recargas_pulseras.recargas);
+
+
+                        const sumGastos = gastos_totales.reduce((partialSum, a) => partialSum + a.total, 0);
+                        const sumaRecargas = recargas_totales.reduce((partialSum, a) => partialSum + a.cantidad, 0);
+
+                        //
     
-                        return res.status(200).json(usuario);
+                        return res.status(200).json({usuario:usuario,total:sumaRecargas-sumGastos});
                     
                     }else{
                         
@@ -51,6 +78,8 @@ var controller = {
 
             const pulsera = await Pulsera.findOne({numero:req.body._id});
 
+            console.log(pulsera);
+
                 if(pulsera){    
 
                     var usuarioLigado = null;
@@ -62,8 +91,9 @@ var controller = {
                     
                     }
 
-
                     var usuario = new Usuario();
+
+                    console.log('aqui');
     
                     usuario.online_repartidor = false;
                     usuario.online = false;
@@ -107,8 +137,47 @@ var controller = {
 
                     }
 
+                    //
 
-                    return res.status(200).json(usuario);
+                    console.log(req.body._id.length);
+
+                    var complex = null;
+
+                    if(req.body._id.length == 4 ){
+
+                        complex = await Pulsera.findOne({numero:req.body._id});
+
+                    }else{
+
+                        complex = await Pulsera.findOne({usuario:req.body._id});
+
+                    }
+
+                    var gastos_usuario = await Venta.find({usuario:complex.usuario ?? '64791c6c247cb371c6033919'});
+                    var gastos_pulsera = await Venta.find({usuario:complex._id});
+
+                    var recargas_pulseras = await Pulsera.findById(complex._id);
+                    var recargas_usuario = await Usuario.findById(complex.usuario ?? '64791c6c247cb371c6033919');
+
+                    if(gastos_pulsera == null ) {[]};
+                    if(gastos_usuario == null ) {[]};
+                    if(recargas_usuario == null) {
+                        recargas_usuario = {};
+                        recargas_usuario.recargas = [];
+                    };
+
+                    var gastos_totales = gastos_usuario.concat(gastos_pulsera);
+                    var recargas_totales = recargas_usuario.recargas.concat(recargas_pulseras.recargas);
+
+
+                    const sumGastos = gastos_totales.reduce((partialSum, a) => partialSum + a.total, 0);
+                    const sumaRecargas = recargas_totales.reduce((partialSum, a) => partialSum + a.cantidad, 0);
+
+                    //
+
+                    console.log('final');
+
+                    return res.status(200).json({usuario:usuario,total:sumaRecargas-sumGastos});
 
                 }else{
 

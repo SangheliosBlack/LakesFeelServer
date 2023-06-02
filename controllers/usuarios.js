@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const fs = require("fs");
 const usuario = require('../models/usuario');
+const pulsera = require('../models/pulsera');
 
  var controller = {
     updateDireccionFavorita : async(req,res)=>{
@@ -266,48 +267,35 @@ const usuario = require('../models/usuario');
         
     },
 
-    calcularTotalAcumulado: async(req,res)=>{        
+    calcularTotalAcumulado: async(req,res)=>{   
+        
+        var complex = await Pulsera.findOne({usuario:req.body.usuario});
 
-        Venta.
-        find({usuario:mongoose.Types.ObjectId(req.body.usuario)}).
-        sort({'updatedAt':-1}).
-        populate('pedidos.repartidor').
-        populate({
-            path:'pedidos.repartidor',
-            populate:{path:'negocios'},
-        }).
-        exec( async function(err,data){
+        if(complex){
 
-            if(err) {
+            var gastos_usuario = await Venta.find({usuario:complex.usuario});
+            var gastos_pulsera = await Venta.find({usuario:complex._id});
 
-                return res.json({ok:false});
+            var recargas_pulseras = await Pulsera.findById(complex._id);
+            var recargas_usuario = await Usuario.findById(complex.usuario);
 
-            }
-            const sumGastos = data.reduce((partialSum, a) => partialSum + a.total, 0);
-            
-            var recargas = await Usuario.findById(req.body.usuario);
+            if(gastos_pulsera == null ) {[]};
+            if(gastos_usuario == null ) {[]};
 
-            const pulsera = await Pulsera.findOne({usuario:req.body.usuario});
+            var gastos_totales = gastos_usuario.concat(gastos_pulsera);
+            var recargas_totales = recargas_usuario.recargas.concat(recargas_pulseras.recargas);
 
+            console.log(recargas_totales);
 
-            if(pulsera){
+            const sumGastos = gastos_totales.reduce((partialSum, a) => partialSum + a.total, 0);
+            const sumaRecargas = recargas_totales.reduce((partialSum, a) => partialSum + a.cantidad, 0);
 
-                var bubble = recargas.recargas.concat(pulsera.recargas);
-
-                recargas.recargas = bubble;
-
-                console.log(bubble);
-
-            }
-            
-            const sumaRecargas = recargas.recargas.reduce((partialSum, a) => partialSum + a.cantidad, 0);
-
-            for (let i = 0; i < Object.keys(recargas.recargas).length; i++) {
+            for (let i = 0; i < Object.keys(recargas_totales).length; i++) {
 
                 var nuevaVentaPlantilla = new Venta();
 
                 nuevaVentaPlantilla.pedidos = [];
-                nuevaVentaPlantilla.total = recargas.recargas[i].cantidad;
+                nuevaVentaPlantilla.total = recargas_totales[i].cantidad;
                 nuevaVentaPlantilla.efectivo = false;
                 nuevaVentaPlantilla.envio = 0;
                 nuevaVentaPlantilla.envioPromo = 0;
@@ -319,14 +307,14 @@ const usuario = require('../models/usuario');
                 nuevaVentaPlantilla.servicio = 0;
                 nuevaVentaPlantilla.negocio = '';
                 nuevaVentaPlantilla.__v = 0;
-                nuevaVentaPlantilla.createdAt = recargas.recargas[i].createdAt;
-                nuevaVentaPlantilla.updatedAt = recargas.recargas[i].updatedAt;
+                nuevaVentaPlantilla.createdAt = recargas_totales[i].createdAt;
+                nuevaVentaPlantilla.updatedAt = recargas_totales[i].updatedAt;
 
-                data.push(nuevaVentaPlantilla);
+                gastos_totales.push(nuevaVentaPlantilla);
 
             }
 
-            var sort = data.sort((a,b)=>{
+            var sort = gastos_totales.sort((a,b)=>{
 
                 let fa = a.createdAt;
                     fb = b.createdAt;
@@ -348,7 +336,17 @@ const usuario = require('../models/usuario');
                 last:new Date()
             });
 
-        });
+        }else{
+
+            return res.json({
+                acumulado:0,
+                ventas:[],
+                last:new Date()
+            });
+
+
+        }
+
 
     },
     
