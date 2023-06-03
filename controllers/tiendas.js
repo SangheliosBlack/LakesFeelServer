@@ -79,7 +79,7 @@ var controller = {
             //
 
 
-            if(10>=1){
+            
 
                 var venta = new Venta();
     
@@ -171,11 +171,7 @@ var controller = {
     
                 return res.status(200).json(venta);
 
-            }else{
-
-                return res.status(400).json({ok:false});
-
-            }
+            
 
         });
         //
