@@ -79,7 +79,7 @@ var controller = {
             //
 
 
-            if((sumRecargas-sumGastos) >= total){
+            if(10>=1){
 
                 var venta = new Venta();
     
